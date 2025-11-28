@@ -47,10 +47,9 @@
 </head>
 <body>
     <div class="container">
-        <h2>Демонстрация работы класса Init (JavaScript версия)</h2>
+        
         
         <div id="fileInfo">
-            <!-- Информация о файле будет здесь -->
         </div>
 
         <h3>Содержимое файла:</h3>
@@ -58,12 +57,10 @@
 
         <h3>Отфильтрованные данные (normal и success):</h3>
         <div id="filteredResults">
-            <!-- Отфильтрованные данные будут здесь -->
         </div>
 
         <h3>Дополнительная информация:</h3>
         <div id="stats">
-            <!-- Статистика будет здесь -->
         </div>
 
         <div style="margin-top: 20px;">
@@ -80,7 +77,6 @@
                 this.filename = 'demo_data';
             }
 
-            // Создание данных
             create() {
                 const results = ['normal', 'illegal', 'failed', 'success'];
                 this.data = [];
@@ -104,12 +100,10 @@
                 return this.data;
             }
 
-            // Форматирование времени
             formatTimestamp(timestamp) {
                 return new Date(timestamp * 1000).toLocaleString('ru-RU');
             }
 
-            // Сохранение в localStorage
             saveToLocalStorage() {
                 let content = "id|script_name|start_time|end_time|result\n";
                 this.data.forEach(row => {
@@ -120,13 +114,12 @@
                 return content;
             }
 
-            // Чтение из localStorage
             readFromLocalStorage() {
                 const content = localStorage.getItem('init_data');
                 if (!content) return [];
 
                 const lines = content.trim().split('\n');
-                lines.shift(); // Пропускаем заголовок
+                lines.shift(); 
 
                 const data = [];
                 lines.forEach(line => {
@@ -147,7 +140,6 @@
                 return data;
             }
 
-            // Фильтрация данных
             get() {
                 const allData = this.readFromLocalStorage();
                 return allData.filter(row => 
@@ -155,7 +147,6 @@
                 );
             }
 
-            // Получение информации о "файле"
             getFileInfo() {
                 const content = localStorage.getItem('init_data');
                 return {
@@ -167,10 +158,8 @@
             }
         }
 
-        // Создаем экземпляр класса
         const init = new Init();
 
-        // Функция для отображения информации о файле
         function displayFileInfo() {
             const fileInfo = init.getFileInfo();
             let html = '<h4>Информация о файле:</h4><ul>';
@@ -181,13 +170,11 @@
             document.getElementById('fileInfo').innerHTML = html;
         }
 
-        // Функция для отображения содержимого файла
         function displayFileContent() {
             const content = localStorage.getItem('init_data');
             document.getElementById('fileContent').textContent = content || 'Файл не существует';
         }
 
-        // Функция для отображения отфильтрованных данных
         function displayFilteredResults() {
             const results = init.get();
             
@@ -253,4 +240,5 @@
     </script>
 </body>
 </html>
+
 
