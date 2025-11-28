@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Демонстрация класса Init</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        table {
+            border-collapse: collapse;
+            margin: 20px 0;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        .error {
+            color: red;
+            padding: 10px;
+            border: 1px solid red;
+            background: #ffe6e6;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Демонстрация работы класса Init (JavaScript версия)</h2>
+        
+        <div id="fileInfo">
+            <!-- Информация о файле будет здесь -->
+        </div>
+
+        <h3>Содержимое файла:</h3>
+        <pre id="fileContent">Данные будут сгенерированы автоматически...</pre>
+
+        <h3>Отфильтрованные данные (normal и success):</h3>
+        <div id="filteredResults">
+            <!-- Отфильтрованные данные будут здесь -->
+        </div>
+
+        <h3>Дополнительная информация:</h3>
+        <div id="stats">
+            <!-- Статистика будет здесь -->
+        </div>
+
+        <div style="margin-top: 20px;">
+            <button onclick="generateData()">🔄 Сгенерировать новые данные</button>
+            <button onclick="location.reload()">🔄 Обновить страницу</button>
+        </div>
+    </div>
+
+    <script>
+        // Класс Init на JavaScript
+        class Init {
+            constructor() {
+                this.data = [];
+                this.filename = 'demo_data';
+            }
+
+            // Создание данных
+            create() {
+                const results = ['normal', 'illegal', 'failed', 'success'];
+                this.data = [];
+
+                for (let i = 1; i <= 10; i++) {
+                    const scriptName = 'script_' + Math.random().toString(36).substr(2, 10);
+                    const startTime = Math.floor(Date.now() / 1000) - Math.floor(Math.random() * 82800) + 3600;
+                    const endTime = startTime + Math.floor(Math.random() * 3540) + 60;
+                    const result = results[Math.floor(Math.random() * results.length)];
+
+                    this.data.push({
+                        id: i,
+                        script_name: scriptName,
+                        start_time: this.formatTimestamp(startTime),
+                        end_time: this.formatTimestamp(endTime),
+                        result: result
+                    });
+                }
+                
+                this.saveToLocalStorage();
+                return this.data;
+            }
+
+            // Форматирование времени
+            formatTimestamp(timestamp) {
+                return new Date(timestamp * 1000).toLocaleString('ru-RU');
+            }
+
+            // Сохранение в localStorage
+            saveToLocalStorage() {
+                let content = "id|script_name|start_time|end_time|result\n";
+                this.data.forEach(row => {
+                    content += `${row.id}|${row.script_name}|${row.start_time}|${row.end_time}|${row.result}\n`;
+                });
+                
+                localStorage.setItem('init_data', content);
+                return content;
+            }
+
+            // Чтение из localStorage
+            readFromLocalStorage() {
+                const content = localStorage.getItem('init_data');
+                if (!content) return [];
+
+                const lines = content.trim().split('\n');
+                lines.shift(); // Пропускаем заголовок
+
+                const data = [];
+                lines.forEach(line => {
+                    if (line.trim()) {
+                        const parts = line.split('|');
+                        if (parts.length === 5) {
+                            data.push({
+                                id: parts[0],
+                                script_name: parts[1],
+                                start_time: parts[2],
+                                end_time: parts[3],
+                                result: parts[4]
+                            });
+                        }
+                    }
+                });
+                
+                return data;
+            }
+
+            // Фильтрация данных
+            get() {
+                const allData = this.readFromLocalStorage();
+                return allData.filter(row => 
+                    row.result === 'normal' || row.result === 'success'
+                );
+            }
+
+            // Получение информации о "файле"
+            getFileInfo() {
+                const content = localStorage.getItem('init_data');
+                return {
+                    'Имя файла': 'demo_data.txt',
+                    'Размер': content ? content.length + ' байт' : '0 байт',
+                    'Время изменения': new Date().toLocaleString('ru-RU'),
+                    'Статус': content ? 'Создан' : 'Не создан'
+                };
+            }
+        }
+
+        // Создаем экземпляр класса
+        const init = new Init();
+
+        // Функция для отображения информации о файле
+        function displayFileInfo() {
+            const fileInfo = init.getFileInfo();
+            let html = '<h4>Информация о файле:</h4><ul>';
+            for (const [key, value] of Object.entries(fileInfo)) {
+                html += `<li><strong>${key}:</strong> ${value}</li>`;
+            }
+            html += '</ul>';
+            document.getElementById('fileInfo').innerHTML = html;
+        }
+
+        // Функция для отображения содержимого файла
+        function displayFileContent() {
+            const content = localStorage.getItem('init_data');
+            document.getElementById('fileContent').textContent = content || 'Файл не существует';
+        }
+
+        // Функция для отображения отфильтрованных данных
+        function displayFilteredResults() {
+            const results = init.get();
+            
+            if (results.length === 0) {
+                document.getElementById('filteredResults').innerHTML = '<p>Нет данных для отображения</p>';
+                return;
+            }
+
+            let html = '<table><thead><tr>';
+            
+            // Заголовки таблицы
+            Object.keys(results[0]).forEach(column => {
+                html += `<th>${column}</th>`;
+            });
+            
+            html += '</tr></thead><tbody>';
+            
+            // Данные таблицы
+            results.forEach(row => {
+                html += '<tr>';
+                Object.values(row).forEach(value => {
+                    html += `<td>${value}</td>`;
+                });
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            document.getElementById('filteredResults').innerHTML = html;
+        }
+
+        // Функция для отображения статистики
+        function displayStats() {
+            const allData = init.readFromLocalStorage();
+            const filteredData = init.get();
+            
+            document.getElementById('stats').innerHTML = `
+                <p><strong>Найдено записей:</strong> ${filteredData.length} из ${allData.length}</p>
+                <p><strong>Эффективность:</strong> ${allData.length > 0 ? Math.round((filteredData.length / allData.length) * 100) : 0}%</p>
+            `;
+        }
+
+        // Функция для генерации данных
+        function generateData() {
+            init.create();
+            displayFileInfo();
+            displayFileContent();
+            displayFilteredResults();
+            displayStats();
+        }
+
+        // Инициализация при загрузке страницы
+        window.addEventListener('load', function() {
+            // Если данных нет, генерируем их
+            if (!localStorage.getItem('init_data')) {
+                generateData();
+            } else {
+                displayFileInfo();
+                displayFileContent();
+                displayFilteredResults();
+                displayStats();
+            }
+        });
+    </script>
+</body>
+</html>
+
